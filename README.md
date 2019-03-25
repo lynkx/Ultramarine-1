@@ -1,6 +1,8 @@
 # Ultramarine
 Platform independent to platform specific transformation tools
 
+[![Build status](https://ci.appveyor.com/api/projects/status/4hsgiwib4ssormfc?svg=true)](https://ci.appveyor.com/project/lynkx/ultramarine-1)
+
 ### Overview
 Simply put, Ultramarine is a platform-independent model to platform-specific model transformation set of tools. These tools, once installed in Visual Studio or Visual Studio Code will help Seavus developers analyze, maintain, generate and build maintainable code that follows structural and behavioral design patterns and Seavus best practices. 
 
