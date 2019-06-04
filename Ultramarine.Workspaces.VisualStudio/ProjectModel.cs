@@ -14,20 +14,22 @@ namespace Ultramarine.Workspaces.VisualStudio
     public class ProjectModel : IProjectModel
     {
         private readonly Project _project;
-        public ProjectModel(Project project)
+        private readonly ILogger _logger;
+        public ProjectModel(Project project, ILogger logger)
         {
             FilePath = project.Properties.Item("FullPath").Value.ToString();
             Name = project.Name;
             Language = project.CodeModel == null ? null : project.CodeModel.Language;
             ProjectItems = MapProjectItems(project.ProjectItems);
             _project = project;
+            _logger = logger;
         }
 
-        public ProjectModel(string projectName) : this(Dte.Instance.GetProject(projectName))
+        public ProjectModel(string projectName, ILogger logger) : this(Dte.Instance.GetProject(projectName), logger)
         {
 
         }
-
+        public ILogger Logger => _logger;
         public string FilePath { get; set; }
         public string Name { get; set; }
         public string Language { get; set; }
@@ -42,7 +44,7 @@ namespace Ultramarine.Workspaces.VisualStudio
             }
             catch (Exception ex)
             {
-                //todo: log exception
+                _logger.Error(ex);
                 return false;
             }
         }
@@ -57,7 +59,7 @@ namespace Ultramarine.Workspaces.VisualStudio
             {
                 projectItem = EnsureDirectoryExists(projectItem.ProjectItems, dir);
             }
-            return new ProjectItemModel(projectItem);
+            return new ProjectItemModel(projectItem, _logger);
         }
 
         public IProjectItemModel CreateProjectItem(string path, string content, bool overwrite)
@@ -71,7 +73,7 @@ namespace Ultramarine.Workspaces.VisualStudio
             File.WriteAllText(path, content);
             var projectItem = _project.ProjectItems.AddFromFile(path);
 
-            return new ProjectItemModel(projectItem);
+            return new ProjectItemModel(projectItem, _logger);
         }
 
         public IProjectItemModel CreateProjectItem(string path, MemoryStream content, bool overwrite)
@@ -90,7 +92,7 @@ namespace Ultramarine.Workspaces.VisualStudio
             }
 
             var projectItem = _project.ProjectItems.AddFromFile(path);
-            return new ProjectItemModel(projectItem);
+            return new ProjectItemModel(projectItem, _logger);
         }
 
         public IProjectItemModel CreateProjectItem(string path, object content, bool overwrite)
@@ -107,12 +109,12 @@ namespace Ultramarine.Workspaces.VisualStudio
         public IEnumerable<IProjectModel> GetProjects(string projectNameExpression)
         {
             var projects = Dte.Instance.GetProjects(projectNameExpression);
-            return projects.Select(proj => new ProjectModel(proj)).ToList();
+            return projects.Select(proj => new ProjectModel(proj, _logger)).ToList();
         }
 
         public IProjectModel GetProject(string projectName)
         {
-            return new ProjectModel(projectName);
+            return new ProjectModel(projectName, _logger);
         }
 
         private ProjectItem EnsureDirectoryExists(ProjectItems projectItems, string folderName)
@@ -201,8 +203,9 @@ namespace Ultramarine.Workspaces.VisualStudio
             {
                 return item.Properties.Item(propertyName).Value.ToString();
             }
-            catch
+            catch(Exception ex)
             {
+                _logger.Error(ex);
                 return string.Empty;
             }
         }
@@ -213,7 +216,7 @@ namespace Ultramarine.Workspaces.VisualStudio
 
             for (int i = 1; i <= projectItems.Count; i++)
             {
-                result.Add(new ProjectItemModel(projectItems.Item(i)));
+                result.Add(new ProjectItemModel(projectItems.Item(i), _logger));
             }
 
             return result;
@@ -251,8 +254,12 @@ namespace Ultramarine.Workspaces.VisualStudio
             }
 
             if (logger.HasErrors)
+            {
+                _logger.Info("Transformation errors:");
+                logger.Errors.ForEach(c => _logger.Info(c.Message));
+                
                 throw new Exception("Errors executing T4 transformation. See output log for details.");
-
+            }
 
 
             return result;
@@ -265,7 +272,7 @@ namespace Ultramarine.Workspaces.VisualStudio
 
         public IWorkspaceModel GetWorkspace()
         {
-            return new WorkspaceModel(Dte.Instance.Host.Solution);
+            return new WorkspaceModel(Dte.Instance.Host.Solution, _logger);
         }
         
     }

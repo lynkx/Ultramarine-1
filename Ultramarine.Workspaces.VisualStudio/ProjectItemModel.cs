@@ -12,7 +12,8 @@ namespace Ultramarine.Workspaces.VisualStudio
     public class ProjectItemModel : IProjectItemModel
     {
         private ProjectItem _projectItem;
-        public ProjectItemModel(ProjectItem projectItem)
+        private ILogger _logger;
+        public ProjectItemModel(ProjectItem projectItem, ILogger logger)
         {
             Name = projectItem.Name;
             FilePath = GetFilePath(projectItem);
@@ -20,6 +21,7 @@ namespace Ultramarine.Workspaces.VisualStudio
             ProjectItems = MapProjectItems(projectItem.ProjectItems);
 
             _projectItem = projectItem;
+            _logger = logger;
         }
         public string FilePath { get; set; }
         public string Name { get; set; }
@@ -27,8 +29,10 @@ namespace Ultramarine.Workspaces.VisualStudio
         public List<IProjectItemModel> ProjectItems { get; set; }
         public IProjectModel Project
         {
-            get { return new ProjectModel(_projectItem.ContainingProject); }
+            get { return new ProjectModel(_projectItem.ContainingProject, _logger); }
         }
+
+        public ILogger Logger => _logger;
 
         public List<IProjectItemModel> GetProjectItems(string expression)
         {
@@ -160,7 +164,7 @@ namespace Ultramarine.Workspaces.VisualStudio
 
             for (int i = 1; i < projectItems.Count; i++)
             {
-                result.Add(new ProjectItemModel(projectItems.Item(i)));
+                result.Add(new ProjectItemModel(projectItems.Item(i), _logger));
             }
 
             return result;

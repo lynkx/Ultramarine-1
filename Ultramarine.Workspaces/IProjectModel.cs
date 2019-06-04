@@ -5,6 +5,7 @@ namespace Ultramarine.Workspaces
 {
     public interface IProjectModel
     {
+        ILogger Logger { get; }
         string FilePath { get; set; }
         string Name { get; set; }
         string Language { get; set; }

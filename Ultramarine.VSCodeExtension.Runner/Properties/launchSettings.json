@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Ultramarine.VSCodeExtension.Runner": {
+      "commandName": "Project",
+      "commandLineArgs": "-g C:\\Projects\\seaq\\src\\SeaQ.Data\\Project.gen.json -p C:\\Projects\\seaq\\src\\SeaQ.Data\\SeaQ.Data.csproj -s C:\\Projects\\seaq\\seaq.sln -v "
+    }
+  }
+}
