@@ -13,6 +13,6 @@ namespace Ultramarine.Workspaces
         List<IProjectItemModel> ProjectItems { get; set; }
         List<IProjectItemModel> GetProjectItems(string expression);
         List<ICodeElementModel> GetCodeElements(string expression);
-        string GetProperty(string propertyName = "Name");
+        string GetProperty(string propertyName = "FileName");
     }
 }
